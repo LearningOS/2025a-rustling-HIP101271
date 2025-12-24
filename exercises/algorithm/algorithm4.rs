@@ -3,7 +3,6 @@
 	This problem requires you to implement a basic interface for a binary tree
 */
 
-//I AM NOT DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
 
@@ -37,36 +36,61 @@ where
             right: None,
         }
     }
+
+    fn insert(&mut self, value: T) {
+        match value.cmp(&self.value) {
+            Ordering::Less => {
+                if let Some(left_node) = &mut self.left {
+                    left_node.insert(value); 
+                } else {
+                    self.left = Some(Box::new(TreeNode::new(value))); 
+                }
+            }
+
+            Ordering::Greater => {
+                if let Some(right_node) = &mut self.right {
+                    right_node.insert(value); 
+                } else {
+                    self.right = Some(Box::new(TreeNode::new(value))); 
+                }
+            }
+
+            Ordering::Equal => (),
+        }
+    }
 }
 
 impl<T> BinarySearchTree<T>
 where
     T: Ord,
 {
-
     fn new() -> Self {
         BinarySearchTree { root: None }
     }
 
-    // Insert a value into the BST
     fn insert(&mut self, value: T) {
-        //TODO
+        match &mut self.root {
+            Some(root_node) => root_node.insert(value),
+    
+            None => self.root = Some(Box::new(TreeNode::new(value))),
+        }
     }
 
-    // Search for a value in the BST
     fn search(&self, value: T) -> bool {
-        //TODO
-        true
-    }
-}
 
-impl<T> TreeNode<T>
-where
-    T: Ord,
-{
-    // Insert a node into the tree
-    fn insert(&mut self, value: T) {
-        //TODO
+        self.search_recursive(&self.root, value)
+    }
+
+    fn search_recursive(&self, node: &Option<Box<TreeNode<T>>>, value: T) -> bool {
+        match node {
+ 
+            None => false,
+            Some(current_node) => match value.cmp(&current_node.value) {
+                Ordering::Equal => true, 
+                Ordering::Less => self.search_recursive(&current_node.left, value), 
+                Ordering::Greater => self.search_recursive(&current_node.right, value), 
+            },
+        }
     }
 }
 

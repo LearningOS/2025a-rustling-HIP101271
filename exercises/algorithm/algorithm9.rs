@@ -2,11 +2,11 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
+
 
 use std::cmp::Ord;
 use std::default::Default;
-
+use std::mem; 
 pub struct Heap<T>
 where
     T: Default,
@@ -37,7 +37,23 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.count += 1;
+        if self.items.len() <= self.count {
+            self.items.push(value);
+        } else {
+            self.items[self.count] = value;
+        }
+        let mut idx = self.count;
+
+        while idx > 1 {
+            let parent_idx = self.parent_idx(idx);
+
+            if (self.comparator)(&self.items[parent_idx], &self.items[idx]) {
+                break;
+            }
+            self.items.swap(idx, parent_idx);
+            idx = parent_idx;
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +73,39 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left_idx = self.left_child_idx(idx);
+
+        if left_idx > self.count {
+            return idx; 
+        }
+        let right_idx = self.right_child_idx(idx);
+
+        if right_idx > self.count {
+            return left_idx;
+        }
+
+        if (self.comparator)(&self.items[left_idx], &self.items[right_idx]) {
+            left_idx
+        } else {
+            right_idx
+        }
+    }
+
+   fn sink_down(&mut self, mut idx: usize) {
+
+        while self.children_present(idx) {
+            let child_idx = self.smallest_child_idx(idx);
+    
+            if child_idx > self.count {
+                break;
+            }
+   
+            if (self.comparator)(&self.items[idx], &self.items[child_idx]) {
+                break;
+            }
+            self.items.swap(idx, child_idx);
+            idx = child_idx;
+        }
     }
 }
 
@@ -84,8 +131,20 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+        let last_idx = self.count;
+        self.items.swap(1, last_idx);
+        
+        let top = self.items.pop().unwrap();
+        self.count -= 1;
+
+        if self.count > 0 {
+            self.sink_down(1);
+        }
+
+        Some(top)
     }
 }
 

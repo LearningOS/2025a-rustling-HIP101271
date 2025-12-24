@@ -2,7 +2,7 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -47,7 +47,7 @@ impl<T> LinkedList<T> {
     pub fn add(&mut self, obj: T) {
         let mut node = Box::new(Node::new(obj));
         node.next = None;
-        let node_ptr = Some(unsafe { NonNull::new_unchecked(Box::into_raw(node)) });
+             let node_ptr = Some(unsafe { NonNull::new_unchecked(Box::into_raw(node)) });
         match self.end {
             None => self.start = node_ptr,
             Some(end_ptr) => unsafe { (*end_ptr.as_ptr()).next = node_ptr },
@@ -69,16 +69,48 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
-	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+pub fn merge(mut list_a: LinkedList<T>, mut list_b: LinkedList<T>) -> Self
+    where
+        T: Ord + Clone, // Clone 用于复制节点值，Ord 用于比较大小
+    {
+        let mut merged = LinkedList::new();
+        // 两个指针分别指向 list_a 和 list_b 的当前节点
+        let mut ptr_a = list_a.start;
+        let mut ptr_b = list_b.start;
+
+        // 循环比较两个链表的当前节点，取较小值加入新链表
+        while let (Some(a), Some(b)) = (ptr_a, ptr_b) {
+            let a_val = unsafe { &(*a.as_ptr()).val };
+            let b_val = unsafe { &(*b.as_ptr()).val };
+
+            if a_val <= b_val {
+                // 取 list_a 的当前节点值
+                merged.add(a_val.clone());
+                // 移动 list_a 指针到下一个节点
+                ptr_a = unsafe { (*a.as_ptr()).next };
+            } else {
+                // 取 list_b 的当前节点值
+                merged.add(b_val.clone());
+                // 移动 list_b 指针到下一个节点
+                ptr_b = unsafe { (*b.as_ptr()).next };
+            }
         }
-	}
+
+
+        while let Some(a) = ptr_a {
+            merged.add(unsafe { (*a.as_ptr()).val.clone() });
+            ptr_a = unsafe { (*a.as_ptr()).next };
+        }
+
+        while let Some(b) = ptr_b {
+            merged.add(unsafe { (*b.as_ptr()).val.clone() });
+            ptr_b = unsafe { (*b.as_ptr()).next };
+        }
+
+        merged
+    }
 }
+
 
 impl<T> Display for LinkedList<T>
 where
